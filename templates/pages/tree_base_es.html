@@ -103,7 +103,7 @@
             onclick="pasteClicked()",
             style="margin-top: 20px; display:none;")}}
 
-            {% if root != base and parent.upper() != root%}
+            {% if root != base and parent != None and parent.upper() != root%}
             {{ render_button(moveToRoot.toRoot,
             id="move-to-root-btn",
             class="button col",
