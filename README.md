@@ -20,14 +20,14 @@ Was used internally at Havana's Technology University in 2017, and since it has
 received numerous updates, additions, and changes.
 We decided to release our version publicly since the original project was not being
 regularly updated. It has grown since to a much more capable application.
-The project is now maintained by [GSI General Software Inc.](https://www.generalsoftwareinc.com/)
-We will keep updating the project for our organization and the community,
-and we are open to all kinds of feedback and contributions.
+The project is now maintained by [crees](https://github.com/crees)
+I will keep updating the project for my work and the community,
+and am open to all kinds of feedback and contributions.
 
 # Install and run
 
-Note: all code has only been tested and it's supported to run on Linux systems, contributions
-regarding compatibility with other platforms is welcomed.
+Note: all code has only been tested and it's supported to run on Linux and FreeBSD
+systems, contributions regarding compatibility with other platforms is welcomed.
 
 ## Local config
 
@@ -66,6 +66,12 @@ apt install build-essential python3-dev libldap2-dev libsasl2-dev ldap-utils tox
 python3 -m venv ./venv
 source ./venv/bin/activate
 pip install -r requirements.txt
+```
+
+## For FreeBSD
+
+```sh
+pkg install net/py-AD-webmanager
 ```
 
 ## For running in local
