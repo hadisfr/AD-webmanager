@@ -1,5 +1,6 @@
 from decouple import config
 
+
 class Settings:
     SECRET_KEY = config("SECRET_KEY")
     LDAP_DOMAIN = config("LDAP_DOMAIN")

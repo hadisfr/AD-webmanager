@@ -1,23 +1,20 @@
-import ldap, logging
+import ldap
+import logging
+
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField
-from libs.common import (flash_password_errors, get_attr, get_encoded_list,
-                         get_parsed_pager_attribute, get_valid_macs)
+from libs.common import get_attr
 from libs.common import iri_for as url_for
-from libs.common import namefrom_dn, password_is_valid
+from libs.common import namefrom_dn
 from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
-                            ldap_change_password, ldap_create_entry,
-                            ldap_delete_entry, ldap_get_all_users,
+                            ldap_user_exists, ldap_get_all_users,
                             ldap_get_entries, ldap_get_entry_simple,
                             ldap_get_group, ldap_get_membership, ldap_get_user,
-                            ldap_in_group, ldap_update_attribute,
-                            ldap_user_exists)
+                            ldap_in_group, ldap_update_attribute)
 from settings import Settings
-from wtforms import (BooleanField, DecimalField, EmailField, IntegerField,
-                     PasswordField, SelectField, SelectMultipleField,
-                     StringField, TextAreaField)
-from wtforms.validators import DataRequired, EqualTo, Length, Optional
+from wtforms import SelectField, SelectMultipleField, StringField
+from wtforms.validators import DataRequired, Length
+
 
 class ComputerEdit(FlaskForm):
     user_name = StringField('Username', [DataRequired(), Length(max=20)])
@@ -25,6 +22,7 @@ class ComputerEdit(FlaskForm):
     machine_role = StringField('Machine Role')
     managed_by = StringField('Managed by')
     uac_flags = SelectMultipleField('Flags', coerce=int)
+
 
 def init(app):
     @app.route('/computer/<username>', methods=['GET', 'POST'])
@@ -51,7 +49,7 @@ def init(app):
                 ('managedBy', "Managed by")
             ]
             group_fields = [('sAMAccountName', "Name"),
-                                ('description', u"Description")]
+                            ('description', u"Description")]
 
             group_details = []
             group_membership = ldap_get_membership(username)
@@ -126,8 +124,8 @@ def init(app):
             return redirect(url_for('tree_base'))
         form = ComputerEdit(request.form)
         user = ldap_get_user(username=username)
-        attr_compilation = get_attr(user)
-        users = ldap_get_all_users()
+        # attr_compilation = get_attr(user)
+        # users = ldap_get_all_users()
         field_mapping = [
             ('sAMAccountName', form.user_name),
             ('location', form.location),
@@ -143,7 +141,7 @@ def init(app):
             try:
                 for attribute, field in field_mapping:
                     value = field.data
-                    has_attribute = user.get(attribute) != None
+                    has_attribute = user.get(attribute) is not None
                     if value != user.get(attribute) or not has_attribute:
                         if attribute == 'sAMAccountName':
                             # Rename the account

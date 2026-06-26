@@ -169,7 +169,7 @@ def init(app):
                 error = str(error[0].upper() + error[1:])
                 flash(error, "error")
         elif form.errors:
-                flash(u"Data validation failed.", "error")
+            flash(u"Data validation failed.", "error")
 
         return render_template("pages/group_delete_es.html", title=title,
                                action="Delete group", form=form,
@@ -288,7 +288,7 @@ def init(app):
             else:
                 try:
                     ldap_add_users_to_group(group['distinguishedName'],
-                                          "member", list(entries))
+                                            "member", list(entries))
                     flash("Added users.", "success")
                     return redirect(url_for('group_overview',
                                             groupname=groupname))
@@ -326,14 +326,14 @@ def init(app):
             try:
                 members = group['member']
                 members.remove(member['distinguishedName'])
-                ldap_update_attribute(group['distinguishedName'],"member", members)
+                ldap_update_attribute(group['distinguishedName'], "member", members)
                 flash("Member of group X %s eliminated" % group['sAMAccountName'], "success")
                 return redirect(url_for('user_overview', username=member['sAMAccountName']))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
         elif form.errors:
-                flash(u"Data validation failed.", "error")
+            flash(u"Data validation failed.", "error")
 
         return render_template("pages/group_delmember_es.html", title=title,
                                action="Remove member from group", form=form,

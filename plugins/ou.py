@@ -1,14 +1,13 @@
-from urllib import parse
 import ldap
-from flask import jsonify, request, flash, redirect, url_for, render_template
+from flask import request, flash, redirect, url_for, render_template
 from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_create_entry, ldap_delete_entry,
                             ldap_get_ou, ldap_ou_exists, ldap_update_attribute)
 from settings import Settings
-from flask_cors import cross_origin, CORS
 from flask_wtf import FlaskForm
 from wtforms.fields import StringField, TextAreaField
 from wtforms.validators import DataRequired, Optional
+
 
 class OU_form(FlaskForm):
     ou_name = StringField(label='OU name', validators=[DataRequired()])
@@ -45,7 +44,7 @@ def init(app):
                 flash(e['info'], "error")
 
         elif form.errors:
-          flash(u"Data validation failed.", "error")
+            flash(u"Data validation failed.", "error")
 
         return render_template("forms/basicform.html", form=form, title=title,
                                action="Add OU",
@@ -75,7 +74,7 @@ def init(app):
                 flash(e, "error")
                 
         elif form.errors:
-                flash(u"Data validation failed.", "error")
+            flash(u"Data validation failed.", "error")
         name = namefrom_dn(ou_name)
         return render_template("pages/ou_delete_es.html", title=title,
                                action="Delete OU", form=form,
@@ -94,7 +93,7 @@ def init(app):
         ou = ldap_get_ou(ou_name)
 
         form = OU_form(request.form)
-        field_mapping = [('distinguishedName',form.ou_name),('description', form.ou_description)]
+        field_mapping = [('distinguishedName', form.ou_name), ('description', form.ou_description)]
         form.visible_fields = [field[1] for field in field_mapping]
 
         if form.validate_on_submit():
@@ -127,5 +126,5 @@ def init(app):
             form.ou_description.data = ou.get('description')
             
         return render_template("forms/basicform.html", form=form, title=title,
-                        action="Save Changes",
-                        parent=url_for('tree_base'))
+                               action="Save Changes",
+                               parent=url_for('tree_base'))

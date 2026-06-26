@@ -16,14 +16,13 @@
 # You can find the license on Debian systems in the file
 # /usr/share/common-licenses/GPL-2
 
-from collections import UserList
-from flask import request, Response, g, session, abort
+from flask import request, Response, g, session
 from functools import wraps
 import ldap
 from ldap import modlist
 import struct
 import uuid
-from settings import Settings
+
 
 LDAP_SCOPES = {"base": ldap.SCOPE_BASE,
                "onelevel": ldap.SCOPE_ONELEVEL,
@@ -94,7 +93,7 @@ def ldap_create_entry(dn, attributes):
         return False
 
     connection = g.ldap['connection']
-    #dn = dn.encode('utf-8')
+    # dn = dn.encode('utf-8')
 
     connection.add_s(dn, modlist.addModlist(attributes))
 
@@ -227,7 +226,7 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_e
         # Simplify the list by only keeping the attributes we known can contain
         # multiple values as list and decode everything to unicode.
 
-        if entry[0] == None:
+        if entry[0] is None:
             continue
         attributes = {}
         for key, value in entry[1].items():
@@ -358,7 +357,7 @@ def ldap_update_attribute(dn, attribute, value=None, new_parent=None, objectClas
 
     connection = g.ldap['connection']
     current_entry = ldap_get_entry_simple({'distinguishedName': dn})
-    #old_value = current_entry[attribute]
+    # old_value = current_entry[attribute]
     mod_attrs = []
 
     if not current_entry:
@@ -553,7 +552,7 @@ def _ldap_connect(username, password):
         # except:
         #   continue
 
-    #raise Exception("No server reachable at this point.")
+    # raise Exception("No server reachable at this point.")
 
 
 def _ldap_sid2str(sid):
@@ -577,7 +576,7 @@ def _ldap_decode_attribute(key, value):
 
     if isinstance(value, list):
         if len(value) > 1:
-            #raise Exception("Unknown multiple value field: %s" % key)
+            # raise Exception("Unknown multiple value field: %s" % key)
             print("Unknown multiple value field: %s" % key)
             return value
         else:
@@ -605,8 +604,8 @@ def _ldap_decode_attribute(key, value):
     # Decode the rest to unicode
     try:
         return value.decode('utf-8')
-    except:
-        #raise Exception("Unknown type: %s" % key)
+    except Exception:
+        # raise Exception("Unknown type: %s" % key)
         print("Unknown multiple value field: %s" % key)
         return value
 
@@ -630,13 +629,6 @@ def ldap_auth(group=None):
             return view_func(*args, **kwargs)
         return wraps(view_func)(_decorator)
     return _my_decorator
-
-
-def tryFunc():
-    """
-    docstring
-    """
-    pass
 
 
 def move(dn, attribute, value):

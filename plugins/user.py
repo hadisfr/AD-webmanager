@@ -167,9 +167,9 @@ def init(app):
                         data = request.files
                         data_dict = data.to_dict(flat=False)
                         file = data_dict['profile_photo'][0]
-                        if(file.filename):
+                        if file.filename:
                             image = Image.open(file)
-                            if(image.format == 'GIF'):
+                            if image.format == 'GIF':
                                 raise GifNotAllowed(
                                     'No gifs allowed in user profile picture')
                             jpeg_binary = BytesIO()
@@ -200,7 +200,7 @@ def init(app):
                     ldap_change_password(
                         None, form.password.data, form.user_name.data)
                     flash(u"User created successfully.", "success")
-                    created_user = ldap_get_user(username=form.user_name.data)
+                    # created_user = ldap_get_user(username=form.user_name.data)
                     return redirect(url_for('user_overview', username=form.user_name.data))
                 else:
                     flash_password_errors(password_validation)
@@ -427,7 +427,7 @@ def init(app):
         if form.validate_on_submit():
             try:
                 for attribute, field in field_mapping:
-                    has_attribute = user.get(attribute) != None
+                    has_attribute = user.get(attribute) is not None
                     if attribute != 'jpegPhoto':
                         value = field.data
                     else:
@@ -498,9 +498,9 @@ def init(app):
                         elif attribute == 'jpegPhoto':
                             data_dict = value.to_dict(flat=False)
                             file = data_dict['profile_photo'][0]
-                            if(file.filename):
+                            if file.filename:
                                 image = Image.open(file)
-                                if(image.format == 'GIF'):
+                                if image.format == 'GIF':
                                     raise GifNotAllowed(
                                         'No gifs allowed in user profile picture')
                                 jpeg_binary = BytesIO()

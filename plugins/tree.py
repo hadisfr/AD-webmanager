@@ -1,21 +1,14 @@
-from cgitb import reset
-from fnmatch import translate
-from time import process_time_ns
-from urllib import parse, response
-from warnings import filters
-
 import ldap
-from flask import (Flask, abort, flash, g, jsonify, redirect, render_template,
-                   request)
-from flask_cors import CORS
+from urllib import parse
+from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
 from libs.common import get_objclass
 from libs.common import iri_for as url_for
 from libs.common import namefrom_dn
 from libs.ldap_func import (ldap_auth, ldap_delete_entry, ldap_get_entries,
-                            ldap_get_group, ldap_get_ou, ldap_get_user,
+                            ldap_get_group, ldap_get_user,
                             ldap_in_group, ldap_obj_has_children,
-                            ldap_update_attribute, move)
+                            ldap_update_attribute)
 from settings import Settings
 from wtforms import SelectField, StringField, SubmitField
 
@@ -29,6 +22,7 @@ class FilterTreeView(FlaskForm):
 class BatchDelete(FlaskForm):
     delete = SubmitField('Delete Selection')
 
+
 class BatchPaste(FlaskForm):
     paste = SubmitField('Paste Selection')
 
@@ -39,6 +33,7 @@ class BatchMoveToRoot(FlaskForm):
 
 class BatchMoveOneLevelUp(FlaskForm):
     up_aLevel = SubmitField("Move One Level Up")
+
 
 def init(app):
     @app.route('/tree', methods=['GET', 'POST'])
@@ -77,23 +72,23 @@ def init(app):
                 filter_select = form.filter_select.data
                 scope = "subtree"
                 entries = get_entries(filter_str, filter_select, base, scope)
-                print('1',entries)    
+                print('1', entries)    
             else:
                 filter_str = None
                 scope = "onelevel"
                 entries = get_entries("top", "objectClass", base, scope)
-           #TODO: batch delete confirmation page
-           ##batch delete
+            # TODO: batch delete confirmation page
+            # batch delete
             if batch_delete.delete.data:
-                checkedData = request.form.getlist("checkedItems") #returns an array of Strings, tho the strings have dict format
+                checkedData = request.form.getlist("checkedItems")  # returns an array of Strings, tho the strings have dict format
                 toDelete = translation(checkedData)
                 try:
                     deleted_list = delete_batch(toDelete)
                     flash_amount(deleted_list, deleted=True)
                 except ldap.LDAPError as e:
-                    flash(e,"error")
+                    flash(e, "error")
                 return redirect(url_for('tree_base', base=base))
-            ##batch move (1 in)
+            # batch move (1 in)
             elif paste.paste.data:
                 checkedData = request.form.getlist("checkedItems")
                 moveTo = request.form.get("moveHere")
@@ -102,32 +97,32 @@ def init(app):
                 print(moveTo)
                 toMove = translation(checkedData)
                 try:
-                    moved_list = move_batch(toMove,moveTo)
-                    flash_amount(moved_list,deleted=False)
+                    moved_list = move_batch(toMove, moveTo)
+                    flash_amount(moved_list, deleted=False)
                 except ldap.LDAPError as e:
                     e = dict(e.args[0])
                     flash(e['info'], "error")
                 return redirect(url_for('tree_base', base=base))
-            ##batch move (to root)
+            # batch move (to root)
             elif moveToRoot.toRoot.data:
                 checkedData = request.form.getlist("checkedItems")
                 moveTo = g.ldap['search_dn']
                 print(checkedData)
                 toMove = translation(checkedData)
                 try:
-                    moved_list = move_batch(toMove,moveTo)
+                    moved_list = move_batch(toMove, moveTo)
                     flash_amount(moved_list, deleted=False)
                 except ldap.LDAPError as e:
                     e = dict(e.args[0])
                     flash(e['info'], "error")
                 return redirect(url_for('tree_base'))
-            ##batch move (1 out)
+            # batch move (1 out)
             elif moveOneLevelUp.up_aLevel.data:
                 checkedData = request.form.getlist("checkedItems")
                 moveTo = parse.unquote(parent)
                 toMove = translation(checkedData)
                 try:
-                    moved_list = move_batch(toMove,moveTo)
+                    moved_list = move_batch(toMove, moveTo)
                     flash_amount(moved_list, deleted=False)
                     pass
                 except ldap.LDAPError as e:
@@ -138,8 +133,8 @@ def init(app):
         name = namefrom_dn(base)
         objclass = get_objclass(base)
         return render_template("pages/tree_base_es.html", form=form, parent=parent, batch_delete=batch_delete,
-                                paste=paste,moveOneLevelUp=moveOneLevelUp,moveToRoot=moveToRoot,
-                                admin=admin, base=base.upper(), entries=entries,entry_fields=entry_fields, 
+                               paste=paste, moveOneLevelUp=moveOneLevelUp, moveToRoot=moveToRoot,
+                               admin=admin, base=base.upper(), entries=entries, entry_fields=entry_fields, 
                                root=g.ldap['search_dn'].upper(), name=name, objclass=objclass)
 
     def get_entries(filter_str, filter_select, base, scope):
@@ -159,8 +154,7 @@ def init(app):
                        'user' in entry['objectClass'] and
                        filter_select in entry and
                        filter_str in entry[filter_select], 
-                       entries
-        )
+                       entries)
         users = sorted(users, key=lambda entry: entry['sAMAccountName'])
         if filter_str == "top":
             other_entries = filter(lambda entry: 'user' not in entry['objectClass'], entries)
@@ -197,7 +191,7 @@ def init(app):
             result.append(entry)
         return result
 
-    def translation(checkedData:list):
+    def translation(checkedData: list):
         '''
         recieves a list of strings with format 
         ``["{name:<>, type:<>, target:<>}",...]`` \n
@@ -210,10 +204,10 @@ def init(app):
         translated = []
         for x in checkedData:
             dicts = {}
-            key1 = x.split("name:'")[1].split("'")[0] #name of the object
-            key2 = x.split("type:'")[1].split("'")[0] #User, Group, Organization Unit, Container
+            key1 = x.split("name:'")[1].split("'")[0]  # name of the object
+            key2 = x.split("type:'")[1].split("'")[0]  # User, Group, Organization Unit, Container
             key3 = x.split("target:'")[1].replace("'}", "")
-            key4 = parse.unquote(key3.split("/")[2]) #username
+            key4 = parse.unquote(key3.split("/")[2])  # username
             if key2 == "User":
                 user = ldap_get_user(username=key4)
                 key5 = user['distinguishedName']
@@ -230,7 +224,7 @@ def init(app):
             translated.append(dicts)
         return translated
     
-    def delete_batch(translatedList:list):
+    def delete_batch(translatedList: list):
         """
         Deletes the objects in the ``translatedList`` and saves the names of each element on a list to be returned
         OU objects with children will not be deleted and will have an error flash
@@ -239,10 +233,10 @@ def init(app):
         \n
         Return: a list with the names of the deleted elements
         """
-        deleted_list=[]
+        deleted_list = []
         for obj in translatedList:
-            #since now there is a dn key there is no need to check what type is the current element to user the
-            #ldap_get_ou(), ldap_get_user(), ldap_get_group() just to get their dn
+            # since now there is a dn key there is no need to check what type is the current element to user the
+            # ldap_get_ou(), ldap_get_user(), ldap_get_group() just to get their dn
             if obj['type'] != 'Container':
                 if obj['type'] != "Organization Unit":
                     ldap_delete_entry(obj['dn'])
@@ -273,11 +267,11 @@ def init(app):
         for obj in translatedList:
             moved_list.append(obj['name'])
             ldap_update_attribute(dn=obj["dn"], attribute="distinguishedName", value=obj["dn"].split(",")[0], new_parent=moveTo)
-            #since now there is a dn key there is no need to check what type is the current element to user the 
-            #ldap_get_ou(), ldap_get_user(), ldap_get_group() just to get their dn
+            # since now there is a dn key there is no need to check what type is the current element to user the 
+            # ldap_get_ou(), ldap_get_user(), ldap_get_group() just to get their dn
         return moved_list
     
-    def flash_amount(namesList:list, deleted:bool):
+    def flash_amount(namesList: list, deleted: bool):
         """
         flashes how many elements were moved/deleted
         recieves the list returned by ``move_batch()`` or ``delete_batch()`` and an extra argument to know if elements were moved or deleted
@@ -288,6 +282,6 @@ def init(app):
             action = "moved"
         if len(namesList):
             if len(namesList) == 1:
-                flash("1 element "+ action+ " successfully.", "success")
+                flash("1 element " + action + " successfully.", "success")
             else:
-                flash(f"{len(namesList)} elements " +action+ " successfully", "success")
+                flash(f"{len(namesList)} elements " + action + " successfully", "success")

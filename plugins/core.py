@@ -1,6 +1,6 @@
 from flask import g, redirect, session
 from libs.common import iri_for as url_for
-from libs.ldap_func import ldap_auth, ldap_get_entry_simple
+from libs.ldap_func import ldap_auth
 
 
 def init(app):

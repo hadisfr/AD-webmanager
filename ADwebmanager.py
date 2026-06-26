@@ -1,8 +1,17 @@
-import logging
 import argparse
-from datetime import date
+import glob
+import importlib
+import logging
 import os
+import sys
+from datetime import date
+from flask import Flask, g
+
+from libs.common import ReverseProxied
+from libs.common import iri_for as url_for
 from settings import Settings
+
+
 app_prefix = "/opt/samba4-manager-master/"
 
 # Check if running from bzr
@@ -18,19 +27,8 @@ args = parser.parse_args()
 if not os.path.exists(app_prefix):
     raise Exception("Missing app dir: %s" % app_prefix)
 
-# Import the rest of the stuff we need
-from flask import Flask, g
-import glob
-import importlib
-
-# Look at the right place
-import sys
 sys.path.append(app_prefix)
 
-# Import our modules
-from libs.common import ReverseProxied
-from libs.common import iri_for as url_for
-from settings import Settings
 
 # Prepare the web server
 app = Flask(__name__,
@@ -44,7 +42,7 @@ if Settings.USE_LOGGING:
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s | %(levelname)s | %(message)s', 
-                                '%Y-%m-%d %H:%M:%S')
+                                  '%Y-%m-%d %H:%M:%S')
 
     stdout_handler = logging.StreamHandler(sys.stderr)
     stdout_handler.setLevel(logging.DEBUG)
@@ -56,6 +54,7 @@ if Settings.USE_LOGGING:
 
     logger.addHandler(file_handler)
     logger.addHandler(stdout_handler)
+
 app.config.from_object(Settings)
 app.jinja_env.globals['url_for'] = url_for
 
@@ -85,7 +84,7 @@ if "LDAP_SERVER" not in app.config:
         for answer in dns.resolver.query(record, dns.rdatatype.SRV):
             address = (answer.target.to_text()[:-1], answer.port)
             answers.append((address, answer.priority, answer.weight))
-    except:
+    except Exception:
         # Ignore exceptions, an empty list will trigger an exception anyway
         pass
 
@@ -131,6 +130,7 @@ def pre_request():
     # The various caches
     g.ldap_cache = {}
     g.app_version = "v2023.02.1"
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
