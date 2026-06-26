@@ -3,11 +3,10 @@ import logging
 
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
-from libs.common import get_attr
 from libs.common import iri_for as url_for
 from libs.common import namefrom_dn
 from libs.ldap_func import (LDAP_AD_USERACCOUNTCONTROL_VALUES, ldap_auth,
-                            ldap_user_exists, ldap_get_all_users,
+                            ldap_user_exists,
                             ldap_get_entries, ldap_get_entry_simple,
                             ldap_get_group, ldap_get_membership, ldap_get_user,
                             ldap_in_group, ldap_update_attribute)

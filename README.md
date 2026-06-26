@@ -31,33 +31,34 @@ systems, contributions regarding compatibility with other platforms is welcomed.
 
 ## Local config
 
-* Create the .env file in the root directory
-  * Put a random string in SECRET\_KEY**
-  * Set LDAP\_DOMAIN to your Directory domain
-  * Set SEARCH\_DN to your Directory LDAP search base
-  * Set LDAP\_SERVER to your Domain Controller IP
-  * Use DEBUG = True if you want the test server to immediately reload after changes
-  * Set USE_LOGGING = True if you want to log to files and console, false logs to console only
-  * Set ADMIN\_GROUP to the security group with read/write permission (default should be Domain Admins)
-* Create settings.py to configure**
-* ADD to TREE\_BLACKLIST the containers you want to hide in the root directory
-* Add attribute pairs to SEARCH\_ATTRS and TREE\_ATTRIBUTES to customize the tree view
+* Create the `.env` file in the project root directory
+  * Set `LDAP\_DOMAIN` to your Directory domain
+  * Set `SEARCH\_DN` to your Directory LDAP search base
+  * Set `LDAP\_SERVER` to your Domain Controller IP
+  * Use `DEBUG = True` if you want the test server to immediately reload after changes
+  * Set `USE_LOGGING = True` if you want to log to files and console, false logs to console only
+  * Set `ADMIN\_GROUP` to the security group with read/write permission (default should be Domain Admins)
+* Modify `settings.py` to configure some other properties
+  * ADD to `TREE\_BLACKLIST `the containers you want to hide in the root directory
+  * Add attribute pairs to `SEARCH\_ATTRS` and `TREE\_ATTRIBUTES` to customize the tree view
 
 ### Setup Environment
 
-Copy the .env.example file to .env and udpate the settings to match your environment.
+Copy the [`.env.example`](.env.example) file to `.env` and udpate the settings to match your environment.
 
 ```sh
 cp .env.example .env
 ```
 
-You can install the dependencies using pip and the supplied requirements.txt. Especial
-consideration to the python-ldap dependency, which depends on native C libraries and as such needs
-native compilers and tooling to be installed ([check python-ldap docs here](https://www.python-ldap.org/en/python-ldap-3.4.0/installing.html#build-prerequisites)).
+## Installing dependencies
 
-## Installing dependencies in Ubuntu 20.04 or Debian 11
+You can install the dependencies using `pip` and the supplied [`requirements.txt`](requirements.txt). Especial
+consideration to the `python-ldap` dependency, which depends on native C libraries and as such needs
+native compilers and tooling to be installed ([check `python-ldap` docs here](https://www.python-ldap.org/en/python-ldap-3.4.0/installing.html#build-prerequisites)).
 
- **Note: We assume you are running those commands with in the procject root directory**
+### For Ubuntu 20.04 or Debian 11
+
+ **Note**: We assume you are running those commands with in the procject root directory.
 
 ```sh
 apt update
@@ -68,23 +69,25 @@ source ./venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## For FreeBSD
+### For FreeBSD
 
 ```sh
 pkg install net/py-AD-webmanager
 ```
 
-## For running in local
+## Running
+
+### In local
 
 ```sh
 python3 ADwebmanager.py
 ```
 
-## For running with Docker
+### With Docker
 
 ```sh
 docker build -t <image name> .
-#after image succsessfully built
+# after image succsessfully built
 docker run -d -p 8080:8080 <image name>
 ```
 

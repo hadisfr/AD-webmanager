@@ -141,41 +141,46 @@ def init(app):
         """
         Get all entries that will be displayed in the tree
         """
-        result = []
         attr_list = [
             'name', 'showInAdvancedViewOnly', 'objectType', 'objectGUID', 'distinguishedName', 'objectClass', 
             'sAMAccountName', 'userAccountControl'
         ]
         for attr_pair in Settings.TREE_ATTRIBUTES:
             attr_list.append(attr_pair[0])
+
         entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True, attrlist=attr_list)
-        users = filter(lambda entry: 
-                       'sAMAccountName' in entry and 
-                       'user' in entry['objectClass'] and
-                       filter_select in entry and
-                       filter_str in entry[filter_select], 
-                       entries)
-        users = sorted(users, key=lambda entry: entry['sAMAccountName'])
+        users = list(sorted(
+            filter(lambda entry: 
+                   'sAMAccountName' in entry and 
+                   'user' in entry['objectClass'] and
+                   filter_select in entry and
+                   filter_str in entry[filter_select], 
+                   entries),
+            key=lambda entry: entry['sAMAccountName']
+        ))
+        result = []
+
         if filter_str == "top":
             other_entries = filter(lambda entry: 'user' not in entry['objectClass'], entries)
             other_entries = sorted(other_entries, key=lambda entry: entry['name'])
-        
             for entry in other_entries:
-                if entry not in users:
+                assert entry not in users
+                if 'group' in entry['objectClass']:
+                    entry['__target'] = url_for('group_overview',
+                                                groupname=entry['sAMAccountName'])
+                else:
                     entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
-                    if 'group' in entry['objectClass']:
-                        entry['__target'] = url_for('group_overview',
-                                                    groupname=entry['sAMAccountName'])
-                    entry['objectClass'] = entry['objectClass'][1]
+                entry['objectClass'] = entry['objectClass'][1]
+                for prefix in Settings.TREE_BLACKLIST:
+                    if entry['distinguishedName'].startswith(prefix):
+                        break
+                else:
                     result.append(entry)
-                    for blacklist in Settings.TREE_BLACKLIST:
-                        if entry['distinguishedName'].startswith(blacklist):
-                            result.remove(entry)
 
         for entry in users:
             entry['name'] = entry['sAMAccountName']
             if 'user' in entry['objectClass']:
-                if entry['userAccountControl'].__and__(2):
+                if entry['userAccountControl'] & 2:  # ACCOUNTDISABLE
                     entry['userAccountControl'] = "Deactivated"
                 else:
                     entry['userAccountControl'] = "Active"
@@ -187,14 +192,14 @@ def init(app):
                     entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
                 continue
-            print(entry)
             result.append(entry)
+
         return result
 
     def translation(checkedData: list):
         '''
         recieves a list of strings with format 
-        ``["{name:<>, type:<>, target:<>}",...]`` \n
+        ``["{name:<>, type:<>, target:<>}",...]``
         and translates them into dicts with keys: 
         ``name``, ``type``, ``username``(except if type is Organization Unit), and ``dn``;
         extracted from those string
@@ -276,12 +281,6 @@ def init(app):
         flashes how many elements were moved/deleted
         recieves the list returned by ``move_batch()`` or ``delete_batch()`` and an extra argument to know if elements were moved or deleted
         """
-        if deleted:
-            action = "deleted"
-        else:
-            action = "moved"
+        action = "deleted" if deleted else "moved"
         if len(namesList):
-            if len(namesList) == 1:
-                flash("1 element " + action + " successfully.", "success")
-            else:
-                flash(f"{len(namesList)} elements " + action + " successfully", "success")
+            flash(f"{len(namesList)} element" + ("s " if len(namesList) > 1 else " ") + action + " successfully.", "success")
