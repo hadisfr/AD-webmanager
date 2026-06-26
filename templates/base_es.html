@@ -55,25 +55,25 @@
         <div id="footer-wrapper">
           <div id="footer">
             {% block footer %}{% endblock%}
-            <p>
-              &copy; 2017-2022 Vicente and Alain Garófalo.
-              <a
+            <div>
+              <snap>&copy; 2015&nbsp;2017&nbsp;<a
+                class="footer-link"
+                href="https://github.com/stgraber/samba4-manager"
+              >Stéphane Graber</a>.&nbsp; &nbsp;</snap>
+              <snap>&copy; 2017&nbsp;2023&nbsp;<a
                 class="footer-link"
                 href="https://github.com/VicentGJ/AD-webmanager"
-              >
-                AD WebManager</a
-              >.
-            </p>
+              >Vicente and Alain Garófalo</a>.&nbsp; &nbsp;</snap>
+              <snap>&copy; 2023&nbsp;2025&nbsp;<a
+                class="footer-link"
+                href="https://github.com/crees/AD-webmanager"
+              >Chris Rees</a>.&nbsp; &nbsp;</snap>
+              <snap>&copy;&nbsp;2026&nbsp;<a
+                class="footer-link"
+                href="https://github.com/hadisfr/AD-webmanager"
+              >H@di</a>.&nbsp; &nbsp;</snap>
+            </div>
             <div id="version">
-              <p>
-                Forked in 2017 from
-                <a
-                  class="footer-link"
-                  href="https://github.com/stgraber/samba4-manager"
-                  >Samba4 web manager</a
-                >
-                by Stéphane Graber.
-              </p>
               <div>{{ g.app_version }}</div>
             </div>
           </div>

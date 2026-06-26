@@ -252,7 +252,7 @@ def init(app):
                 user['jpegPhoto'] = 'data:image/jpeg;base64,' + imgbase64
                 identity_fields.append(('Profile Photo', 'jpegPhoto'))
 
-            group_fields = [('sAMAccountName', "Name"),
+            group_fields = [('name', "Name"),
                             ('description', u"Description")]
 
             group_details = []
@@ -267,14 +267,14 @@ def init(app):
                 group_details, key=lambda entry: entry['sAMAccountName'])
 
             available_groups = ldap_get_entries(
-                ldap_filter="(objectclass=group)", scope="subtree", attrlist=['distinguishedName', 'sAMAccountName'])
+                ldap_filter="(objectclass=group)", scope="subtree", attrlist=['distinguishedName', 'sAMAccountName', 'name'])
             group_choices = [("_", "Select a Group")]
 
             for group_entry in available_groups:
                 if not group_entry['distinguishedName'] in group_membership:
                     # if not ldap_in_group(group_entry['sAMAccountName'], username):
                     group_choices += [(group_entry['distinguishedName'],
-                                       group_entry['sAMAccountName'])]
+                                       group_entry['name'])]
 
             form = UserAddGroup(request.form)
             form.available_groups.choices = group_choices

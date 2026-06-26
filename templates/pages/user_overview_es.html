@@ -84,7 +84,9 @@
         {% for entry in groups %}
         <tr>
             {% for key, title in group_fields %}
-            {% if key in entry %}
+            {% if (key == "sAMAccountName" or key == "name") and key in entry %}
+            <td><a href="{{ url_for('group_overview', groupname=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
+            {% elif key in entry %}
             <td>{{ entry[key] }}</td>
             {% else %}
             <td>&nbsp;</td>
@@ -94,9 +96,10 @@
             {% if '__primaryGroup' in user and user['__primaryGroup'] == entry['distinguishedName'] %}
             <td></td>
             {% else %}
-            <td><a
-                    href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">(remove
-                    from group)</a></td>
+            <td><a class="button dangerous" style="font-size: small;"
+                   href="{{ url_for('group_delmember', groupname=entry['sAMAccountName'], member=user['sAMAccountName'], show_user=True) }}">
+               Remove from group
+            </a></td>
             {% endif %}
             {% endif %}
         </tr>

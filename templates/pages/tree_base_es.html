@@ -67,9 +67,13 @@
                             data-reference-type="{{ entry['__type'] }}"
                             value="{name:'{{ entry[key] }}', type:'{{ entry['__type'] }}', target:'{{ entry['__target'] }}'}">
 
-                        <a href="{{ entry['__target'] }}">{{ entry[key] }}</a>
+                        <a href="{{ entry['__target'] }}"
+                        {% if 'active' in entry and entry['active'] == 'Deactivated' %}
+                        style="color=gray;"
+                        {% endif %}
+                        >{{ entry[key] }}</a>
 
-                        {% if entry['__type'] == "Organization Unit" or entry['__type']== "Container" %}
+                        {% if entry['__type'] == "Organization Unit" or entry['__type'] == "Container" %}
                         <input type="radio" name="moveHere" class="move-here-element" value="{{ entry['__target'] }}"
                             style="display: none;" data-reference-name="{{ entry[key] }}" onclick="radioClicked()">
                         <label for="moveHere" class="move-here-element move-here-span"
@@ -85,7 +89,7 @@
                         </span>
                     </td>
                     {% elif (key == "__type" or key == "objectClass") and key in entry %}
-                    <td>{{ entry[key] }}</td>
+                    <td style="text-transform: capitalize;">{{ entry[key] }}</td>
                     {% elif key in entry %}
                     <td>{{ entry[key]|truncate(40) }}</td>
                     {% else %}

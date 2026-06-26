@@ -190,6 +190,7 @@ def init(app):
                     entry['objectClass'] = 'computer'
                     entry['__target'] = url_for('computer_overview', username=entry['sAMAccountName'])
                 else:
+                    entry['objectClass'] = 'user'
                     if 'displayName' in entry:
                         entry['name'] = f"{entry['name']} ({entry['displayName']})"
                     entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])

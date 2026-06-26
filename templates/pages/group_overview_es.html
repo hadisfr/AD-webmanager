@@ -110,7 +110,7 @@
                         <td>&nbsp;</td>
                 {% endif %}
         {% endfor %}
-        <td><a class="button dangerous" href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">Remove from group</a></td>
+        <td><a class="button dangerous" style="font-size: small;" href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">Remove from group</a></td>
 </tr>
 {% endfor %}
 </table>

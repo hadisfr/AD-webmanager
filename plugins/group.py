@@ -108,8 +108,6 @@ def init(app):
     @app.route('/group/<groupname>')
     @ldap_auth("Domain Users")
     def group_overview(groupname):
-        title = "Group details - %s" % groupname
-
         if not ldap_group_exists(groupname=groupname):
             flash(f"The group: {groupname}, doesn't exists (err404)", "error")
             return redirect(url_for('tree_base'))
@@ -121,6 +119,7 @@ def init(app):
                         ('description', u"Description")]
 
         group = ldap_get_group(groupname=groupname)
+        title = "Group details - %s" % group.get('name', groupname)
 
         admin = ldap_in_group(Settings.ADMIN_GROUP) and not group['groupType'] & 1
 

@@ -47,7 +47,7 @@ def init(app):
                 ('machineRole', "Machine Role"),
                 ('managedBy', "Managed by")
             ]
-            group_fields = [('sAMAccountName', "Name"),
+            group_fields = [('name', "Name"),
                             ('description', u"Description")]
 
             group_details = []
@@ -69,7 +69,7 @@ def init(app):
                 if not group_entry['distinguishedName'] in group_membership:
                     # if not ldap_in_group(group_entry['sAMAccountName'], username):
                     group_choices += [(group_entry['distinguishedName'],
-                                       group_entry['sAMAccountName'])]
+                                       group_entry['name'])]
 
             class UserAddGroup(FlaskForm):
                 available_groups = SelectField('Groups')
