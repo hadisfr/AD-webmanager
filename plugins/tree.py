@@ -169,6 +169,10 @@ def init(app):
             elif 'distinguishedName' in entry:
                 entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
             entry['objectClass'] = entry['objectClass'][1]
+
+            if Settings.TREE_WHITELIST:
+                if 'distinguishedName' in entry and not entry['distinguishedName'].endswith(Settings.TREE_WHITELIST):
+                    continue
             for prefix in Settings.TREE_BLACKLIST:
                 if 'distinguishedName' in entry and entry['distinguishedName'].startswith(prefix):
                     break

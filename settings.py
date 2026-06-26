@@ -40,13 +40,14 @@ class Settings:
     SEARCH_DN = config("SEARCH_DN")
     SICCIP_AWARE = config("SICCIP_AWARE", False)
     ADMIN_GROUP = config("ADMIN_GROUP", "Domain Admins")
+    TREE_WHITELIST = config("TREE_WHITELIST", None)  # postfix, leave empty to skip
 
     TIMEZONE = config("TIMEZONE", "UTC")
     USE_LOGGING = config("USE_LOGGING", True)
     DEBUG = config("DEBUG", False)
     DEV = config("DEV", False)
 
-    TREE_BLACKLIST = [
+    TREE_BLACKLIST = [  # prefix
         "CN=ForeignSecurityPrincipals", "OU=sudoers", "CN=Builtin",
         "CN=Infrastructure", "CN=LostAndFound", "CN=Managed Service Accounts",
         "CN=NTDS Quotas", "CN=Program Data", "CN=System",
