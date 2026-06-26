@@ -17,7 +17,7 @@
         <p style="text-align: right;"><a href="{{ url_for('user_edit_profile', username=user['sAMAccountName']) }}"
                 class="button">Edit user</a></p>
         <p style="text-align: right;"><a href="{{ url_for('user_delete', username=user['sAMAccountName']) }}"
-                class="button">Remove user</a></p>
+                class="button dangerous">Remove user</a></p>
         {% endif %}
     </div>
     <h2>Profile</h2>

@@ -34,7 +34,7 @@
         <a href="{{ url_for('ou_edit', ou_name=base) }}" class="upper-element-link">
             <input type="button" value="Edit {{name}}" class="button upper-element" style="margin-right:3px;"></a>
         <a href="{{ url_for('ou_delete', ou_name=base) }}" class="upper-element-link">
-            <input type="button" value="Delete {{name}}" class="button upper-element" style="margin-top: 3px;"
+            <input type="button dangerous" value="Delete {{name}}" class="button upper-element" style="margin-top: 3px;"
                 id="ou-delete-btn" disabled></a>
         {% endif %}
         <!--<a href="{{ url_for('core_index') }}" class="button">Create container</a>-->
@@ -76,7 +76,15 @@
                             style="display: none; padding: 0;">here</label>
                         {% endif %}
                     </td>
-                    {% elif key == "__type" and key in entry %}
+                    {% elif key == "mail" and key in entry %}
+                    <td><a href="mailto:{{ entry[key] }}">{{ entry[key] }}</a></td>
+                    {% elif key == "active" and key in entry %}
+                    <td>
+                        <span style="color: {% if entry[key] == 'Deactivated' %}maroon{% else %}green{% endif %}">
+                            {{ entry[key] }}
+                        </span>
+                    </td>
+                    {% elif (key == "__type" or key == "objectClass") and key in entry %}
                     <td>{{ entry[key] }}</td>
                     {% elif key in entry %}
                     <td>{{ entry[key]|truncate(40) }}</td>

@@ -44,6 +44,7 @@ class GroupAddMembers(FlaskForm):
 
 class GroupEdit(FlaskForm):
     name = StringField('Name', [DataRequired()])
+    acct_name = StringField('sAMAccountName', [DataRequired()])
     description = TextAreaField(u'Description')
     mail = StringField(u'Mail')
     group_type = RadioField('Type',
@@ -60,7 +61,8 @@ def init(app):
         title = "Add group"
 
         form = GroupEdit(request.form)
-        field_mapping = [('sAMAccountName', form.name),
+        field_mapping = [('name', form.name),
+                         ('sAMAccountName', form.acct_name),
                          ('description', form.description),
                          ('mail', form.mail),
                          (None, form.group_type),
@@ -84,11 +86,11 @@ def init(app):
                                                                   struct.pack("I", int(group_type)))[0]).encode('utf-8')
                     elif attribute and field.data:
                         attributes[attribute] = field.data.encode('utf-8')
-                ldap_create_entry("cn=%s,%s" % (form.name.data, base), attributes)
+                ldap_create_entry("cn=%s,%s" % (form.acct_name.data, base), attributes)
 
                 flash(u"Group created successfully.", "success")
                 return redirect(url_for('group_overview',
-                                        groupname=form.name.data))
+                                        groupname=form.acct_name.data))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
@@ -112,21 +114,20 @@ def init(app):
             flash(f"The group: {groupname}, doesn't exists (err404)", "error")
             return redirect(url_for('tree_base'))
 
-        identity_fields = [('sAMAccountName', "Name"),
+        identity_fields = [('name', "Name"),
                            ('description', u"Description")]
 
-        group_fields = [('sAMAccountName', "Name"),
+        group_fields = [('name', "Name"),
                         ('description', u"Description")]
 
         group = ldap_get_group(groupname=groupname)
 
         admin = ldap_in_group(Settings.ADMIN_GROUP) and not group['groupType'] & 1
 
-        group_details = [ldap_get_group(entry, 'distinguishedName')
-                         for entry in ldap_get_membership(groupname)]
-
-        group_details = list(filter(None, group_details))
-        groups = sorted(group_details, key=lambda entry: entry['sAMAccountName'])
+        groups = sorted(filter(
+            None,
+            [ldap_get_group(entry, 'distinguishedName') for entry in ldap_get_membership(groupname)]
+        ), key=lambda entry: entry['sAMAccountName'])
 
         member_list = []
         for entry in ldap_get_members(groupname):
@@ -193,7 +194,8 @@ def init(app):
             abort(401)
 
         form = GroupEdit(request.form)
-        field_mapping = [('sAMAccountName', form.name),
+        field_mapping = [('name', form.name),
+                         ('sAMAccountName', form.acct_name),
                          ('description', form.description),
                          ('mail', form.mail),
                          (None, form.group_type),
@@ -235,7 +237,7 @@ def init(app):
 
                 flash(u"Successfully modified group.", "success")
                 return redirect(url_for('group_overview',
-                                        groupname=form.name.data))
+                                        groupname=form.acct_name.data))
             except ldap.LDAPError as e:
                 e = dict(e.args[0])
                 flash(e['info'], "error")
@@ -244,7 +246,8 @@ def init(app):
             flash(u"Data verification failed.", "error")
 
         if not form.is_submitted():
-            form.name.data = group.get('sAMAccountName')
+            form.name.data = group.get('name')
+            form.acct_name.data = group.get('sAMAccountName')
             form.description.data = group.get('description')
             form.mail.data = group.get('mail')
             form.group_type.data = group['groupType'] & 2147483648

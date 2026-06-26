@@ -178,20 +178,21 @@ def init(app):
                     result.append(entry)
 
         for entry in users:
+            if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
+                continue
             entry['name'] = entry['sAMAccountName']
             if 'user' in entry['objectClass']:
                 if entry['userAccountControl'] & 2:  # ACCOUNTDISABLE
-                    entry['userAccountControl'] = "Deactivated"
+                    entry['active'] = "Deactivated"
                 else:
-                    entry['userAccountControl'] = "Active"
+                    entry['active'] = "Active"
                 if 'computer' in entry['objectClass']:
                     entry['objectClass'] = 'computer'
                     entry['__target'] = url_for('computer_overview', username=entry['sAMAccountName'])
                 else:
-                    entry['objectClass'] = 'user'
+                    if 'displayName' in entry:
+                        entry['name'] = f"{entry['name']} ({entry['displayName']})"
                     entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
-            if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
-                continue
             result.append(entry)
 
         return result

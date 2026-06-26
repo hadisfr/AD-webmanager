@@ -9,9 +9,9 @@
 <div class="group_profile" style="min-height:10em;">
     <div class="right">
 {% if admin %}
-        <p style="text-align: right;"><a href="{{ url_for('group_edit', groupname=group['sAMAccountName']) }}" class="button">Edit group</a></p>
-        <p style="text-align: right;"><a href="{{ url_for('group_delete', groupname=group['sAMAccountName']) }}" class="button">Delete group</a></p>
         <p style="text-align: right;"><a href="{{ url_for('group_addmembers', groupname=group['sAMAccountName']) }}" class="button">Add member</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('group_edit', groupname=group['sAMAccountName']) }}" class="button">Edit group</a></p>
+        <p style="text-align: right;"><a href="{{ url_for('group_delete', groupname=group['sAMAccountName']) }}" class="button dangerous">Delete group</a></p>
 {% endif %}
     </div>
     <h2>Properties</h2>
@@ -71,7 +71,7 @@
 {% for entry in groups %}
     <tr>
 {% for key, title in group_fields %}
-{% if key == "sAMAccountName" and key in entry %}
+{% if (key == "sAMAccountName" or key == "name") and key in entry %}
         <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('group_overview', groupname=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
 {% elif key in entry %}
         <td>{{ entry[key] }}</td>
@@ -96,7 +96,7 @@
 {% for entry in members %}
 <tr>
         {% for key, title in group_fields %}
-                {% if key == "sAMAccountName" and key in entry %}
+                {% if (key == "sAMAccountName" or key == "name") and key in entry %}
                         {% if "user" in entry['objectClass'] %}
                                 <td style='padding-right:10px;white-space:nowrap;'><a href="{{ url_for('user_overview', username=entry['sAMAccountName']) }}">{{ entry[key] }}</a></td>
                         {% else %}
@@ -110,7 +110,7 @@
                         <td>&nbsp;</td>
                 {% endif %}
         {% endfor %}
-        <td><a href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">(remove from group)</a></td>
+        <td><a class="button dangerous" href="{{ url_for('group_delmember', groupname=group['sAMAccountName'], member=entry['sAMAccountName']) }}">Remove from group</a></td>
 </tr>
 {% endfor %}
 </table>
