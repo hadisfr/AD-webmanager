@@ -436,6 +436,9 @@ def init(app):
                     last_name = user.get('sn')
                     if value != user.get(attribute) or not has_attribute:
                         if attribute == 'sAMAccountName':
+                            # TODO ensure safety of changing sAMAccountName
+                            flash(f"Attribute '{attribute}' is not editable!")
+
                             # Rename the account
                             ldap_update_attribute(
                                 user['distinguishedName'], "sAMAccountName", value)
@@ -447,6 +450,10 @@ def init(app):
                             ldap_update_attribute(
                                 user['distinguishedName'], "distinguishedName", rdn)
                             user = ldap_get_user(value)
+                        elif attribute == 'mail':
+                            # TODO ensure safety of changing sAMAccountName
+                            flash(f"Attribute '{attribute}' is not editable!")
+
                         elif attribute == 'userAccountControl':
                             current_uac = 512
                             for key, flag in (LDAP_AD_USERACCOUNTCONTROL_VALUES.items()):

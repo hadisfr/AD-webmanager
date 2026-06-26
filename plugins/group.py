@@ -213,6 +213,9 @@ def init(app):
                     value = field.data
                     if value != group.get(attribute):
                         if attribute == 'sAMAccountName':
+                            # TODO ensure safety of changing sAMAccountName
+                            flash(f"Attribute '{attribute}' is not editable!")
+
                             # Rename the account
                             ldap_update_attribute(group['distinguishedName'],
                                                   "sAMAccountName", value)
