@@ -72,7 +72,7 @@ app.jinja_env.globals['url_for'] = url_for
 if 'URL_PREFIX' in app.config:
     app.wsgi_app = ReverseProxied(app.wsgi_app, app.config['URL_PREFIX'])
 
-load_plugins()
+load_plugins(app_prefix)
 
 
 @app.before_request
