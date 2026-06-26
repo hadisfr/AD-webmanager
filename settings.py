@@ -51,5 +51,5 @@ class Settings:
         "CN=NTDS Quotas", "CN=Program Data", "CN=System",
         "OU=Domain Controllers", "CN=Guest", "CN=krbtgt"
     ]
-    SEARCH_ATTRS = [('sAMAccountName', 'Username'), ('email', 'Email'), ('objectClass', "Type")]
-    TREE_ATTRIBUTES = [('mail', "Email"), ('objectClass', "Type"), ('active', "Status")]
+    SEARCH_ATTRS = [('sAMAccountName', 'Username'), ('displayName', 'Display Name'), ('mail', 'Email'), ('objectClass', "Type")]
+    TREE_ATTRS = [('mail', "Email"), ('objectClass', "Type"), ('active', "Status")]

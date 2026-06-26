@@ -1,4 +1,5 @@
 import ldap
+from operator import itemgetter
 from urllib import parse
 from flask import abort, flash, g, redirect, render_template, request
 from flask_wtf import FlaskForm
@@ -15,7 +16,7 @@ from wtforms import SelectField, StringField, SubmitField
 
 class FilterTreeView(FlaskForm):
     filter_str = StringField()
-    filter_select = SelectField(choices=Settings.SEARCH_ATTRS)
+    filter_field = SelectField(choices=Settings.SEARCH_ATTRS)
     search = SubmitField('Search')
 
 
@@ -57,8 +58,8 @@ def init(app):
         else:
             entry_fields = [('name', "Name")]
             
-            if Settings.TREE_ATTRIBUTES:
-                for item in Settings.TREE_ATTRIBUTES:
+            if Settings.TREE_ATTRS:
+                for item in Settings.TREE_ATTRS:
                     entry_fields.append((item[0], item[1])) 
 
             form = FilterTreeView(request.form)
@@ -69,9 +70,9 @@ def init(app):
 
             if form.search.data and form.validate():
                 filter_str = form.filter_str.data
-                filter_select = form.filter_select.data
+                filter_field = form.filter_field.data
                 scope = "subtree"
-                entries = get_entries(filter_str, filter_select, base, scope)
+                entries = get_entries(filter_str, filter_field, base, scope)
                 print('1', entries)    
             else:
                 filter_str = None
@@ -137,7 +138,7 @@ def init(app):
                                admin=admin, base=base.upper(), entries=entries, entry_fields=entry_fields, 
                                root=g.ldap['search_dn'].upper(), name=name, objclass=objclass)
 
-    def get_entries(filter_str, filter_select, base, scope):
+    def get_entries(filter_str, filter_field, base, scope):
         """
         Get all entries that will be displayed in the tree
         """
@@ -145,38 +146,34 @@ def init(app):
             'name', 'showInAdvancedViewOnly', 'objectType', 'objectGUID', 'distinguishedName', 'objectClass', 
             'sAMAccountName', 'userAccountControl'
         ]
-        for attr_pair in Settings.TREE_ATTRIBUTES:
-            attr_list.append(attr_pair[0])
+        attr_list += list(filter(lambda attr: attr not in attr_list, map(itemgetter(0), Settings.TREE_ATTRS)))
+        attr_list += list(filter(lambda attr: attr not in attr_list, map(itemgetter(0), Settings.SEARCH_ATTRS)))
+        assert filter_field in attr_list
 
-        entries = ldap_get_entries("objectClass=top", base, scope, ignore_erros=True, attrlist=attr_list)
+        entries = ldap_get_entries(f"{filter_field}={filter_str}", base, scope, attr_list)
         users = list(sorted(
-            filter(lambda entry: 
-                   'sAMAccountName' in entry and 
-                   'user' in entry['objectClass'] and
-                   filter_select in entry and
-                   filter_str in entry[filter_select], 
-                   entries),
+            filter(lambda entry: 'sAMAccountName' in entry and 'user' in entry['objectClass'], entries),
             key=lambda entry: entry['sAMAccountName']
         ))
+        other_entries = list(sorted(
+            filter(lambda entry: 'user' not in entry['objectClass'], entries),
+            key=lambda entry: entry['name']
+        ))
+
         result = []
-
-        if filter_str == "top":
-            other_entries = filter(lambda entry: 'user' not in entry['objectClass'], entries)
-            other_entries = sorted(other_entries, key=lambda entry: entry['name'])
-            for entry in other_entries:
-                assert entry not in users
-                if 'group' in entry['objectClass']:
-                    entry['__target'] = url_for('group_overview',
-                                                groupname=entry['sAMAccountName'])
-                else:
-                    entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
-                entry['objectClass'] = entry['objectClass'][1]
-                for prefix in Settings.TREE_BLACKLIST:
-                    if entry['distinguishedName'].startswith(prefix):
-                        break
-                else:
-                    result.append(entry)
-
+        for entry in other_entries:
+            assert entry not in users
+            if 'group' in entry['objectClass']:
+                entry['__target'] = url_for('group_overview',
+                                            groupname=entry['sAMAccountName'])
+            elif 'distinguishedName' in entry:
+                entry['__target'] = url_for('tree_base', base=entry['distinguishedName'])
+            entry['objectClass'] = entry['objectClass'][1]
+            for prefix in Settings.TREE_BLACKLIST:
+                if 'distinguishedName' in entry and entry['distinguishedName'].startswith(prefix):
+                    break
+            else:
+                result.append(entry)
         for entry in users:
             if 'showInAdvancedViewOnly' in entry and entry['showInAdvancedViewOnly']:
                 continue
@@ -195,7 +192,6 @@ def init(app):
                         entry['name'] = f"{entry['name']} ({entry['displayName']})"
                     entry['__target'] = url_for('user_overview', username=entry['sAMAccountName'])
             result.append(entry)
-
         return result
 
     def translation(checkedData: list):

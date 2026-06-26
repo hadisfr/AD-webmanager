@@ -194,7 +194,7 @@ def ldap_get_entry(ldap_filter):
     return None
 
 
-def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_erros=False):
+def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None):
     """
         Return the attributes for an entry or None if it doesn't exist and
         False on errors.
@@ -225,7 +225,6 @@ def ldap_get_entries(ldap_filter, base=None, scope=None, attrlist=None, ignore_e
     for entry in result:
         # Simplify the list by only keeping the attributes we known can contain
         # multiple values as list and decode everything to unicode.
-
         if entry[0] is None:
             continue
         attributes = {}
