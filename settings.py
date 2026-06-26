@@ -44,6 +44,7 @@ class Settings:
     TIMEZONE = config("TIMEZONE", "UTC")
     USE_LOGGING = config("USE_LOGGING", True)
     DEBUG = config("DEBUG", False)
+    DEV = config("DEV", False)
 
     TREE_BLACKLIST = [
         "CN=ForeignSecurityPrincipals", "OU=sudoers", "CN=Builtin",
